@@ -27,3 +27,30 @@ const registerUser = async (req, res) => {
     }
   }
 };
+
+const loginUser = async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.password === password) {
+      res.json({ message: "Login successful", user });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  // ... (Other controller functions)
+};

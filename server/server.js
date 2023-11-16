@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const userRoutes = require("./routes/userRouts");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -30,7 +30,11 @@ mongoose.connection.on("disconnected", () => {
 });
 
 // CORS Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 
 // express middleware handling the body parsing
 app.use(express.json());

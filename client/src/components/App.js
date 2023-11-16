@@ -1,9 +1,22 @@
-import logo from '../logo.svg';
-import './styles/App.css';
+import React from "react";
+import "./styles/App.css";
+import Login from "./Login";
+import Home from "./Home";
+import { Routes, Route } from "react-router-dom";
 
 function App() {
-    return (
-        <div className="App">
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
+  );
+}
+
+export default App;
+
+/*
+<div className="App">
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo" />
                 <p>
@@ -50,7 +63,4 @@ function App() {
                 </a>
             </header>
         </div>
-    );
-}
-
-export default App;
+*/
