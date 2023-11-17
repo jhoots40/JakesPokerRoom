@@ -1,14 +1,43 @@
 import React from "react";
 import { Box, Button, Grid, TextField } from "@mui/material";
-import io from "socket.io-client";
-import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import socket from "./socket";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Chat() {
   const [message, setMessage] = useState("");
   const [prevMessages, setMessages] = useState([]);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
+    const fetchUserData = async () => {
+      axios
+        .get("http://localhost:5000/api/users/get-info", {
+          withCredentials: true,
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setUser(response.data);
+          } else {
+            // Handle other status codes
+            console.error("Error fetching user data:", response.statusText);
+          }
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 401) {
+            // Redirect to login page if not authenticated
+            navigate("/login");
+          } else {
+            // Handle other errors
+            console.error("Error fetching user data:", error.message);
+          }
+        });
+    };
+
+    fetchUserData();
+
     // Listen for chat messages from the server
     socket.on("chatMessage", (receivedMessage) => {
       // Update the messages state with the received message
@@ -21,10 +50,9 @@ function Chat() {
     return () => {
       socket.off("chatMessage");
     };
-  }, []);
+  }, [navigate]);
 
   const handleClick = () => {
-    console.log("made it here");
     socket.emit("chatMessage", message);
     setMessage("");
   };

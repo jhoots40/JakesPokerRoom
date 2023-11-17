@@ -46,7 +46,10 @@ socketLogic(io);
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-//app.use(cookieParser());
+app.use(cookieParser());
+
+// API routes
+app.use("/api/users", userRoutes);
 
 // Serve static assets from the React app (production only)
 if (process.env.NODE_ENV === "production") {
@@ -56,9 +59,6 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "client", "build", "index.html"));
   });
 }
-
-// API routes
-app.use("/api/users", userRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 5000;

@@ -3,7 +3,6 @@ import Box from "@mui/system/Box";
 import TextField from "@mui/material/TextField";
 import { Grid, Button, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 import axios from "axios";
 
 function Login() {
@@ -21,11 +20,11 @@ function Login() {
     };
 
     axios
-      .post("http://localhost:5000/api/users/login", data)
+      .post("http://localhost:5000/api/users/login", data, {
+        withCredentials: true,
+      })
       .then((response) => {
         console.log(response.data);
-        Cookies.set("username", data.username, { expires: 1 });
-
         navigate("/");
       })
       .catch((error) => {
