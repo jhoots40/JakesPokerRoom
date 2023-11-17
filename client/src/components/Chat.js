@@ -12,6 +12,8 @@ function Chat() {
     // Listen for chat messages from the server
     socket.on("chatMessage", (receivedMessage) => {
       // Update the messages state with the received message
+      console.log(prevMessages);
+      console.log(receivedMessage);
       setMessages((prevMessages) => [...prevMessages, receivedMessage]);
     });
 

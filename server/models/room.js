@@ -3,7 +3,7 @@ const User = require("./user");
 
 const roomSchema = new mongoose.Schema({
   entryCode: {
-    type: String,
+    type: Number,
     required: true,
     unique: true,
   },

@@ -4,6 +4,7 @@ import Login from "./Login";
 import Home from "./Home";
 import Signup from "./Signup";
 import Chat from "./Chat";
+import Join from "./Join";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Signup />} />
       <Route path="/chat" element={<Chat />} />
+      <Route path="/join" element={<Join />} />
     </Routes>
   );
 }

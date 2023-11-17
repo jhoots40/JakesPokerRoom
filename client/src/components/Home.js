@@ -8,12 +8,6 @@ import { useNavigate } from "react-router-dom";
 
 function Home() {
   const navigate = useNavigate();
-  useEffect(() => {
-    // Read the 'username' cookie using js-cookie
-    //const username = Cookies.get("username");
-    //console.log("Username from cookie:", username);
-    // Use the username as needed...
-  }, []);
 
   const handleClick = () => {
     const username = Cookies.get("username");
@@ -21,7 +15,13 @@ function Home() {
     socket.emit("createRoom", username, (response) => {
       console.log(response);
     });
-    navigate("./chat");
+    navigate("/chat");
+  };
+
+  const handleJoin = () => {
+    const username = Cookies.get("username");
+    console.log(`${username} has went to the join room page`);
+    navigate("/join");
   };
 
   return (
@@ -33,6 +33,9 @@ function Home() {
     >
       <Button variant="contained" onClick={handleClick}>
         Create Room
+      </Button>
+      <Button variant="contained" onClick={handleJoin}>
+        Join Room
       </Button>
     </Box>
   );
