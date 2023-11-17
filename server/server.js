@@ -1,51 +1,54 @@
 const express = require("express");
+const http = require("http");
 const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const socketIo = require("socket.io");
 const userRoutes = require("./routes/userRoutes");
+const socketLogic = require("./services/socket");
 
-const app = express();
+// Load environment variables from .env file (only in development)
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 
-// exclusing dotenv config from production
-if (process.env.NODE_ENV !== "production") require("dotenv").config();
-
+// Connect to MongoDB
 mongoose.set("strictQuery", true);
 mongoose.Promise = global.Promise;
-// Connect to MongoDB (replace with your connection string)
 mongoose.connect(process.env.MONGODB_URI);
 
-// When successfully connected
 mongoose.connection.on("connected", () => {
-  console.log("Connection to database established successfully");
+  console.log("Connected to the database successfully");
 });
 
-// If the connection throws an error
 mongoose.connection.on("error", (err) => {
-  console.error(`Error connecting to database: ${err}`);
+  console.error(`Error connecting to the database: ${err}`);
 });
 
-// When the connection is disconnected
 mongoose.connection.on("disconnected", () => {
   console.log("Database disconnected");
 });
 
-// CORS Middleware
-app.use(
-  cors({
+// Express app setup
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
     origin: "http://localhost:3000",
-  })
-);
+  },
+});
 
-// express middleware handling the body parsing
+// Socket.IO setup
+socketLogic(io);
+
+// Middleware
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
-
-// express middleware handling the form parsing
 app.use(express.urlencoded({ extended: false }));
+//app.use(cookieParser());
 
-// Use user routes
-app.use("/api/users", userRoutes);
-
-// create static assets from react code for production only
+// Serve static assets from the React app (production only)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("client/build"));
 
@@ -54,9 +57,11 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// use port from environment variables for production
-const PORT = process.env.PORT || 5000;
+// API routes
+app.use("/api/users", userRoutes);
 
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
+// Start the server
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -12,6 +12,8 @@ const registerUser = async (req, res) => {
 
     const savedUser = await newUser.save();
 
+    res.cookie("username", username, { maxAge: 900000, httpOnly: true });
+
     res.status(201).json(savedUser);
   } catch (error) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
@@ -39,6 +41,11 @@ const loginUser = async (req, res) => {
     }
 
     if (user.password === password) {
+      console.log(user.username);
+      //res.cookie("username", user.username, {
+      //maxAge: 900000,
+      //httpOnly: true,
+      //});
       res.json({ message: "Login successful", user });
     } else {
       res.status(401).json({ error: "Invalid credentials" });

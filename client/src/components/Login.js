@@ -3,6 +3,7 @@ import Box from "@mui/system/Box";
 import TextField from "@mui/material/TextField";
 import { Grid, Button, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import axios from "axios";
 
 function Login() {
@@ -14,8 +15,6 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent the default form submission behavior
 
-    console.log("made it here");
-
     const data = {
       username: username,
       password: password,
@@ -24,8 +23,8 @@ function Login() {
     axios
       .post("http://localhost:5000/api/users/login", data)
       .then((response) => {
-        console.log("made it here");
         console.log(response.data);
+        Cookies.set("username", data.username, { expires: 1 });
 
         navigate("/");
       })
