@@ -41,7 +41,6 @@ function Join() {
   }, [navigate]);
 
   const handleClick = () => {
-    console.log(code);
     navigate(`/chat/${code}`);
   };
 

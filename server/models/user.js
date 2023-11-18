@@ -23,4 +23,6 @@ const userSchema = new mongoose.Schema({
   // For example: firstName, lastName, dateOfBirth, etc.
 });
 
-module.exports = mongoose.model("Users", userSchema);
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;
