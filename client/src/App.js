@@ -1,10 +1,10 @@
 import React from "react";
 import "./styles/App.css";
-import Login from "./Login";
-import Home from "./Home";
-import Signup from "./Signup";
-import Chat from "./Chat";
-import Join from "./Join";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Signup from "./pages/Signup";
+import Chat from "./pages/Chat";
+import Join from "./pages/Join";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Signup />} />
-      <Route path="/chat" element={<Chat />} />
+      <Route path="/chat/:roomCode" element={<Chat />} />
       <Route path="/join" element={<Join />} />
     </Routes>
   );

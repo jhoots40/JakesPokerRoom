@@ -1,13 +1,12 @@
 import React from "react";
-import { Box, Button, Grid, TextField } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import socket from "./socket";
+import socket from "../utils/socket";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Join() {
-  const [code, setCode] = useState();
+function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
@@ -26,7 +25,10 @@ function Join() {
           }
         })
         .catch((error) => {
-          if (error.response && error.response.status === 401) {
+          if (
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403)
+          ) {
             // Redirect to login page if not authenticated
             navigate("/login");
           } else {
@@ -37,13 +39,31 @@ function Join() {
     };
 
     fetchUserData();
+
+    // Connect to the socket when entering the game room page
+    socket.connect();
+
+    return () => {
+      // Disconnect from the socket when leaving the game room page
+      socket.disconnect();
+    };
   }, [navigate]);
 
   const handleClick = () => {
-    console.log(code);
-    const username = Cookies.get("username");
-    socket.emit("joinRoom", code, username);
-    navigate("/chat");
+    console.log(user);
+    socket.emit("createRoom", user.username, (response) => {
+      console.log(response);
+      if (response.success) {
+        navigate(`/chat/${response.entryCode}`);
+      } else {
+        console.error("Error creating room:", response.error);
+      }
+    });
+  };
+
+  const handleJoin = () => {
+    console.log(`${user.username} has went to the join room page`);
+    navigate("/join");
   };
 
   return (
@@ -53,25 +73,14 @@ function Join() {
       alignItems="center"
       style={{ height: "100vh" }}
     >
-      <Grid container direction="column" alignItems="center" spacing={2}>
-        <Grid item>
-          <TextField
-            id="code"
-            label="Code"
-            variant="outlined"
-            onChange={(e) => setCode(e.target.value)}
-            autoComplete="username"
-            error={false}
-          />
-        </Grid>
-        <Grid item>
-          <Button variant="contained" onClick={handleClick}>
-            Join Room
-          </Button>
-        </Grid>
-      </Grid>
+      <Button variant="contained" onClick={handleClick}>
+        Create Room
+      </Button>
+      <Button variant="contained" onClick={handleJoin}>
+        Join Room
+      </Button>
     </Box>
   );
 }
 
-export default Join;
+export default Home;

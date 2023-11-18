@@ -1,13 +1,11 @@
 import React from "react";
 import { Box, Button, Grid, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
-import socket from "./socket";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Chat() {
-  const [message, setMessage] = useState("");
-  const [prevMessages, setMessages] = useState([]);
+function Join() {
+  const [code, setCode] = useState();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
@@ -26,7 +24,10 @@ function Chat() {
           }
         })
         .catch((error) => {
-          if (error.response && error.response.status === 401) {
+          if (
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403)
+          ) {
             // Redirect to login page if not authenticated
             navigate("/login");
           } else {
@@ -37,24 +38,11 @@ function Chat() {
     };
 
     fetchUserData();
-
-    // Listen for chat messages from the server
-    socket.on("chatMessage", (receivedMessage) => {
-      // Update the messages state with the received message
-      console.log(prevMessages);
-      console.log(receivedMessage);
-      setMessages((prevMessages) => [...prevMessages, receivedMessage]);
-    });
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      socket.off("chatMessage");
-    };
   }, [navigate]);
 
   const handleClick = () => {
-    socket.emit("chatMessage", message);
-    setMessage("");
+    console.log(code);
+    navigate(`/chat/${code}`);
   };
 
   return (
@@ -67,18 +55,17 @@ function Chat() {
       <Grid container direction="column" alignItems="center" spacing={2}>
         <Grid item>
           <TextField
-            id="message"
-            label="Message"
+            id="code"
+            label="Code"
             variant="outlined"
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => setCode(e.target.value)}
             autoComplete="username"
             error={false}
-            value={message}
           />
         </Grid>
         <Grid item>
           <Button variant="contained" onClick={handleClick}>
-            Send Message
+            Join Room
           </Button>
         </Grid>
       </Grid>
@@ -86,4 +73,4 @@ function Chat() {
   );
 }
 
-export default Chat;
+export default Join;
