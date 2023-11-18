@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import Cookies from "js-cookie";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import socket from "../utils/socket";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -9,6 +9,7 @@ import axios from "axios";
 function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const runItOnce = useRef(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -37,22 +38,14 @@ function Home() {
           }
         });
     };
-
-    fetchUserData();
-
-    // Connect to the socket when entering the game room page
-    socket.connect();
-
-    return () => {
-      // Disconnect from the socket when leaving the game room page
-      socket.disconnect();
-    };
-  }, [navigate]);
+    if (runItOnce.current) {
+      runItOnce.current = false;
+      fetchUserData();
+    }
+  }, []);
 
   const handleClick = () => {
-    console.log(user);
-    socket.emit("createRoom", user.username, (response) => {
-      console.log(response);
+    socket.emit("createRoom", (response) => {
       if (response.success) {
         navigate(`/chat/${response.entryCode}`);
       } else {
@@ -62,7 +55,6 @@ function Home() {
   };
 
   const handleJoin = () => {
-    console.log(`${user.username} has went to the join room page`);
     navigate("/join");
   };
 

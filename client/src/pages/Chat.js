@@ -11,26 +11,8 @@ function Chat() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const { roomCode } = useParams();
-  const runItOnce = useRef(false);
-
-  const [isSocketConnected, setIsSocketConnected] = useState(false);
-  useEffect(() => {
-    // Connect to the socket when the component mounts
-    socket.connect();
-
-    // Set the socket connection status in the state
-    setIsSocketConnected(true);
-
-    // Add the event listener
-    socket.on("chatMessage", handleChatMessages);
-
-    // Disconnect from the socket when the component unmounts
-    return () => {
-      socket.off("chatMessage", handleChatMessages);
-      socket.disconnect();
-      setIsSocketConnected(false);
-    };
-  }, []);
+  const [userJoined, setUserJoined] = useState(false);
+  const runItOnce = useRef(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,10 +23,9 @@ function Chat() {
             withCredentials: true,
           }
         );
-
         if (response.status === 200) {
           setUser(response.data);
-          socket.emit("joinRoom", roomCode, response.data.username);
+          setUserJoined(true);
         } else {
           console.error("Error fetching user data:", response.statusText);
         }
@@ -60,28 +41,28 @@ function Chat() {
       }
     };
 
-    // Run only once the socket is connected
-    if (isSocketConnected) {
-      // Connect to the socket when entering the game room page
-      socket.connect();
-
+    // Run once when component mounts
+    if (runItOnce.current) {
       fetchUserData();
-
-      // Add the event listener
-      socket.on("chatMessage", handleChatMessages);
-
-      // Set the runItOnce ref to true
-      runItOnce.current = true;
+      runItOnce.current = false;
     }
 
-    // Cleanup function (disconnect socket when the component is unmounted)
-    return () => {
-      socket.off("chatMessage", handleChatMessages);
-    };
-  }, [isSocketConnected]); // Empty dependencies array to run this effect only once on mount
+    // If userJoined is true, emit "joinRoom" and set up cleanup for "leaveRoom"
+    if (userJoined) {
+      socket.on("chatMessage", handleChatMessages);
+      socket.emit("joinRoom", roomCode, user.username);
+      return () => {
+        socket.off("chatMessage", handleChatMessages);
+        socket.emit("leaveRoom");
+      };
+    }
+
+    // If userJoined is false, return a cleanup function that does nothing
+    return () => {};
+  }, [userJoined]); // Only run the effect when userJoined changes
 
   const handleClick = () => {
-    socket.emit("chatMessage", message, user.username, roomCode);
+    socket.emit("chatMessage", message);
     setMessage("");
   };
 

@@ -5,7 +5,7 @@ module.exports = (io) => {
   io.on("connection", (socket) => {
     // Handle room creation
     console.log("connected to head socket");
-    socket.on("createRoom", async (username, callback) => {
+    socket.on("createRoom", async (callback) => {
       try {
         // Generate a simple entry code (for simplicity, using a random number)
         const entryCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -50,29 +50,39 @@ module.exports = (io) => {
       }
 
       socket.join(entryCode);
+      socket.username = username;
+      socket.entryCode = entryCode;
       console.log(`${username} joined room ${entryCode}`);
     });
 
     // Broadcast chat messages to the room
-    socket.on("chatMessage", (message, username, entryCode) => {
-      io.to(entryCode).emit("chatMessage", {
-        username: username,
+    socket.on("chatMessage", (message) => {
+      io.to(socket.entryCode).emit("chatMessage", {
+        username: socket.username,
         message: message,
       });
     });
 
-    socket.on("leaveRoom", async (username, entryCode) => {
-      console.log(`${username} left room ${entryCode}`);
+    socket.on("leaveRoom", async () => {
+      if (socket.username == null || socket.entryCode == null) return;
+      console.log(`${socket.username} left room ${socket.entryCode}`);
+
+      const username = socket.username;
       const user = await User.findOne({ username });
-      const room = await Room.findOne({ entryCode });
 
-      room.players.filter((p) => p.username === username);
-
-      await room.save();
-      socket.leave(entryCode);
+      try {
+        const updatedRoom = await Room.removePlayer(
+          socket.entryCode,
+          user.username
+        );
+        console.log("Player removed:", updatedRoom);
+      } catch (error) {
+        console.error(error.message);
+      }
+      socket.leave(socket.entryCode);
     });
 
-    // Leave the room when a user disconnects
+    // Leave the connection
     socket.on("disconnect", (username) => {
       console.log(`${username} disconnected from head`);
     });
