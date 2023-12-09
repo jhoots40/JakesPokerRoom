@@ -14,7 +14,7 @@ function Chat() {
   const [userJoined, setUserJoined] = useState(false);
   const runItOnce = useRef(true);
 
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
@@ -59,7 +59,51 @@ function Chat() {
 
     // If userJoined is false, return a cleanup function that does nothing
     return () => {};
-  }, [userJoined]); // Only run the effect when userJoined changes
+  }, [userJoined]); */
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const config = {
+      withCredentials: true,
+      signal,
+    };
+
+    axios
+      .get("http://localhost:5000/api/users/get-info", config)
+      .then((response) => {
+        setUserJoined(true);
+        setUser(response.data);
+      })
+      .catch((error) => {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled:", error.message);
+        } else if (
+          error.response.status === 401 ||
+          error.response.status === 403
+        ) {
+          navigate("/login");
+        } else {
+          console.error("Error:", error);
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    // If userJoined is true, emit "joinRoom" and set up cleanup for "leaveRoom"
+    if (userJoined) {
+      socket.on("chatMessage", handleChatMessages);
+      socket.emit("joinRoom", roomCode, user.username);
+      return () => {
+        socket.off("chatMessage", handleChatMessages);
+        socket.emit("leaveRoom");
+      };
+    }
+
+    return () => {};
+  }, [userJoined]);
 
   const handleClick = () => {
     socket.emit("chatMessage", message);

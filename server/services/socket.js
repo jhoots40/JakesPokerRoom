@@ -75,7 +75,7 @@ module.exports = (io) => {
           socket.entryCode,
           user.username
         );
-        console.log("Player removed:", updatedRoom);
+        console.log("Player removed:", user.username);
       } catch (error) {
         console.error(error.message);
       }

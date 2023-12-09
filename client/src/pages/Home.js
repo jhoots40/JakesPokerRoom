@@ -11,7 +11,9 @@ function Home() {
   const [user, setUser] = useState(null);
   const runItOnce = useRef(true);
 
-  useEffect(() => {
+  /*useEffect(() => {
+
+
     const fetchUserData = async () => {
       axios
         .get("http://localhost:5000/api/users/get-info", {
@@ -42,6 +44,36 @@ function Home() {
       runItOnce.current = false;
       fetchUserData();
     }
+  }, []);*/
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const config = {
+      withCredentials: true,
+      signal,
+    };
+
+    axios
+      .get("http://localhost:5000/api/users/get-info", config)
+      .then((response) => {
+        console.log(response.data);
+        setUser(response.data);
+      })
+      .catch((error) => {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled:", error.message);
+        } else if (
+          error.response.status === 401 ||
+          error.response.status === 403
+        ) {
+          navigate("/login");
+        } else {
+          console.error("Error:", error);
+        }
+      });
+
+    return () => controller.abort();
   }, []);
 
   const handleClick = () => {

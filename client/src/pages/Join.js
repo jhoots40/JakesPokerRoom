@@ -10,35 +10,33 @@ function Join() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      axios
-        .get("http://localhost:5000/api/users/get-info", {
-          withCredentials: true,
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            setUser(response.data);
-          } else {
-            // Handle other status codes
-            console.error("Error fetching user data:", response.statusText);
-          }
-        })
-        .catch((error) => {
-          if (
-            error.response &&
-            (error.response.status === 401 || error.response.status === 403)
-          ) {
-            // Redirect to login page if not authenticated
-            navigate("/login");
-          } else {
-            // Handle other errors
-            console.error("Error fetching user data:", error.message);
-          }
-        });
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const config = {
+      withCredentials: true,
+      signal,
     };
 
-    fetchUserData();
-  }, [navigate]);
+    axios
+      .get("http://localhost:5000/api/users/get-info", config)
+      .then((response) => {
+        setUser(response.data);
+      })
+      .catch((error) => {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled:", error.message);
+        } else if (
+          error.response.status === 401 ||
+          error.response.status === 403
+        ) {
+          navigate("/login");
+        } else {
+          console.error("Error:", error);
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
 
   const handleClick = () => {
     navigate(`/chat/${code}`);
