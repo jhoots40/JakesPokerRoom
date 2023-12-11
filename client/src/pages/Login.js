@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Box from "@mui/system/Box";
 import TextField from "@mui/material/TextField";
-import { Grid, Button, Typography } from "@mui/material";
+import { Grid, Button, Typography, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -45,10 +45,24 @@ function Login() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      style={{ height: "100vh" }}
+      style={{ minHeight: "100vh" }}
+      sx={{ backgroundColor: "rgb(70, 70, 70)" }}
     >
       <form onSubmit={handleSubmit}>
         <Grid container direction="column" alignItems="center" spacing={2}>
+          <Grid item>
+            <Typography variant="h1" color="#141414">
+              Dev Dialogue
+            </Typography>
+          </Grid>
+          <Grid item sx={{ mb: 2 }}>
+            <Typography variant="span" color="#141414">
+              Don't have an account?&ensp;
+            </Typography>
+            <Link href="/register" color="secondary" variant="span">
+              Sign up today!
+            </Link>
+          </Grid>
           {error && (
             <Grid item>
               <Typography variant="p" color="error">
@@ -64,6 +78,8 @@ function Login() {
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
               error={error !== ""}
+              focused
+              color="customDarkGrey"
             />
           </Grid>
           <Grid item>
@@ -75,10 +91,17 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               error={error !== ""}
+              focused
+              color="customDarkGrey"
             />
           </Grid>
-          <Grid item>
-            <Button type="submit" variant="contained">
+          <Grid item sx={{ mt: 1 }}>
+            <Button
+              sx={{ margin: 0.5 }}
+              type="submit"
+              variant="contained"
+              color="customDarkGrey"
+            >
               Log In
             </Button>
           </Grid>

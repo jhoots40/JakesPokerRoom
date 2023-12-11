@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Grid, Box, Typography, TextField, Button } from "@mui/material";
+import { Grid, Box, Typography, TextField, Button, Link } from "@mui/material";
 import axios from "axios";
 
 function Signup() {
@@ -89,9 +89,23 @@ function Signup() {
       justifyContent="center"
       alignItems="center"
       style={{ height: "100vh" }}
+      sx={{ backgroundColor: "rgb(70, 70, 70)" }}
     >
       <form onSubmit={handleSubmit}>
         <Grid container direction="column" alignItems="center" spacing={2}>
+          <Grid item>
+            <Typography variant="h1" color="#141414">
+              Dev Dialogue
+            </Typography>
+          </Grid>
+          <Grid item sx={{ mb: 2 }}>
+            <Typography variant="span" color="#141414">
+              Already have an account?&ensp;
+            </Typography>
+            <Link href="/login" variant="span" color="secondary">
+              Log in here!
+            </Link>
+          </Grid>
           {error && (
             <Grid item>
               <Typography variant="p" color="error">
@@ -107,6 +121,8 @@ function Signup() {
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
               error={usernameError}
+              color="customDarkGrey"
+              focused
             />
           </Grid>
           <Grid item>
@@ -117,6 +133,8 @@ function Signup() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               error={emailError}
+              color="customDarkGrey"
+              focused
             />
           </Grid>
           <Grid item>
@@ -128,6 +146,8 @@ function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               error={passwordError}
+              color="customDarkGrey"
+              focused
             />
           </Grid>
           <Grid item>
@@ -139,10 +159,12 @@ function Signup() {
               onChange={(e) => setConfirm(e.target.value)}
               autoComplete="current-confirm"
               error={passwordError}
+              color="customDarkGrey"
+              focused
             />
           </Grid>
-          <Grid item>
-            <Button type="submit" variant="contained">
+          <Grid item sx={{ mt: 1 }}>
+            <Button type="submit" variant="contained" color="customDarkGrey">
               Sign Up
             </Button>
           </Grid>
