@@ -47,10 +47,14 @@ function Chat() {
     // If userJoined is true, emit "joinRoom" and set up cleanup for "leaveRoom"
     if (userJoined) {
       socket.on("chatMessage", handleChatMessages);
+      socket.on("userJoined", handleJoinRoom);
+      socket.on("userLeft", handleLeaveRoom);
       socket.emit("joinRoom", roomCode, user.username);
       return () => {
-        socket.off("chatMessage", handleChatMessages);
         socket.emit("leaveRoom");
+        socket.off("userLeft", handleLeaveRoom);
+        socket.off("userJoined", handleJoinRoom);
+        socket.off("chatMessage", handleChatMessages);
       };
     }
 
@@ -66,6 +70,16 @@ function Chat() {
   const handleChatMessages = (data) => {
     console.log(data);
     //setChatMessages((prevMessages) => [...prevMessages, data]);
+  };
+
+  const handleJoinRoom = (data) => {
+    console.log("made it here");
+    console.log(data);
+  };
+
+  const handleLeaveRoom = (data) => {
+    console.log("made it here 2");
+    console.log(data);
   };
 
   return (

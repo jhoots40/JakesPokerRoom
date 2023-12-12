@@ -19,9 +19,6 @@ module.exports = (io) => {
         // Save the room to the database
         await room.save();
 
-        // Notify the user about the room and entry code
-        socket.emit("roomCreated", { entryCode });
-
         console.log(`User created a room with entry code: ${entryCode}`);
         callback({ success: true, entryCode: entryCode });
       } catch (error) {
@@ -52,6 +49,9 @@ module.exports = (io) => {
       socket.join(entryCode);
       socket.username = username;
       socket.entryCode = entryCode;
+      io.to(socket.entryCode).emit("userJoined", {
+        message: `${username} joined room ${entryCode}`,
+      });
       console.log(`${username} joined room ${entryCode}`);
     });
 
@@ -75,11 +75,14 @@ module.exports = (io) => {
           socket.entryCode,
           user.username
         );
-        console.log("Player removed:", user.username);
+        console.log(`${socket.username} left room ${socket.entryCode}`);
+        io.to(socket.entryCode).emit("userLeft", {
+          message: `${socket.username} left room ${socket.entryCode}`,
+        });
+        socket.leave(socket.entryCode);
       } catch (error) {
         console.error(error.message);
       }
-      socket.leave(socket.entryCode);
     });
 
     // Leave the connection
