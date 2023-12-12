@@ -58,6 +58,7 @@ function Join() {
             onChange={(e) => setCode(e.target.value)}
             autoComplete="username"
             error={false}
+            type="number"
           />
         </Grid>
         <Grid item>

@@ -49,7 +49,12 @@ function Chat() {
       socket.on("chatMessage", handleChatMessages);
       socket.on("userJoined", handleJoinRoom);
       socket.on("userLeft", handleLeaveRoom);
-      socket.emit("joinRoom", roomCode, user.username);
+      socket.emit("joinRoom", roomCode, user.username, (response) => {
+        if (!response.success) {
+          alert("room doesn't exist");
+          navigate("/");
+        }
+      });
       return () => {
         socket.emit("leaveRoom");
         socket.off("userLeft", handleLeaveRoom);

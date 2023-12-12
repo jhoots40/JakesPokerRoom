@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const socketIo = require("socket.io");
 const userRoutes = require("./routes/userRoutes");
+const roomRoutes = require("./routes/roomRoutes");
 const socketLogic = require("./services/socket");
 
 // Load environment variables from .env file (only in development)
@@ -50,6 +51,7 @@ app.use(cookieParser());
 
 // API routes
 app.use("/api/users", userRoutes);
+app.use("/api/rooms", roomRoutes);
 
 // Serve static assets from the React app (production only)
 if (process.env.NODE_ENV === "production") {

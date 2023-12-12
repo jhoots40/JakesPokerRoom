@@ -27,10 +27,18 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("joinRoom", async (entryCode, username) => {
+    socket.on("joinRoom", async (entryCode, username, callback) => {
       // Add user to room in DB
       const user = await User.findOne({ username });
       const room = await Room.findOne({ entryCode });
+
+      if (!room) {
+        console.log(
+          `${username} tried to join a room (${entryCode}) that doesn't exist`
+        );
+        callback({ success: false, entryCode: entryCode });
+        return;
+      }
 
       const flag = true;
 
@@ -45,7 +53,7 @@ module.exports = (io) => {
         room.players.push(user);
         await room.save();
       }
-
+      callback({ success: true, entryCode: entryCode });
       socket.join(entryCode);
       socket.username = username;
       socket.entryCode = entryCode;
@@ -65,7 +73,6 @@ module.exports = (io) => {
 
     socket.on("leaveRoom", async () => {
       if (socket.username == null || socket.entryCode == null) return;
-      console.log(`${socket.username} left room ${socket.entryCode}`);
 
       const username = socket.username;
       const user = await User.findOne({ username });

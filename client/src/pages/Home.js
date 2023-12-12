@@ -1,7 +1,6 @@
 import React from "react";
-import { Box, Button } from "@mui/material";
-import Cookies from "js-cookie";
-import { useEffect, useState, useRef } from "react";
+import { Box, Button, Grid, Avatar } from "@mui/material";
+import { useEffect, useState } from "react";
 import socket from "../utils/socket";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -9,42 +8,6 @@ import axios from "axios";
 function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const runItOnce = useRef(true);
-
-  /*useEffect(() => {
-
-
-    const fetchUserData = async () => {
-      axios
-        .get("http://localhost:5000/api/users/get-info", {
-          withCredentials: true,
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            setUser(response.data);
-          } else {
-            // Handle other status codes
-            console.error("Error fetching user data:", response.statusText);
-          }
-        })
-        .catch((error) => {
-          if (
-            error.response &&
-            (error.response.status === 401 || error.response.status === 403)
-          ) {
-            // Redirect to login page if not authenticated
-            navigate("/login");
-          } else {
-            // Handle other errors
-            console.error("Error fetching user data:", error.message);
-          }
-        });
-    };
-    if (runItOnce.current) {
-      runItOnce.current = false;
-      fetchUserData();
-    }
-  }, []);*/
 
   useEffect(() => {
     const controller = new AbortController();
@@ -74,7 +37,7 @@ function Home() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [navigate]);
 
   const handleClick = () => {
     socket.emit("createRoom", (response) => {
@@ -90,19 +53,57 @@ function Home() {
     navigate("/join");
   };
 
+  const handleRooms = () => {
+    navigate("/rooms");
+  };
+
   return (
     <Box
       display="flex"
       justifyContent="center"
       alignItems="center"
-      style={{ height: "100vh" }}
+      style={{ height: "100vh", backgroundColor: "rgb(70, 70, 70)" }}
     >
-      <Button variant="contained" onClick={handleClick}>
-        Create Room
-      </Button>
-      <Button variant="contained" onClick={handleJoin}>
-        Join Room
-      </Button>
+      <Grid container direction="column" alignItems="center" spacing={2}>
+        <Grid item>
+          <Avatar
+            sx={{
+              bgcolor: "#0277bd",
+              borderColor: "#141414 !important",
+              border: 5,
+              width: 100,
+              height: 100,
+            }}
+          >{`${user?.username}`}</Avatar>
+        </Grid>
+        <Grid item>
+          <Button
+            color="customDarkGrey"
+            variant="contained"
+            onClick={handleRooms}
+          >
+            Active Rooms
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            color="customDarkGrey"
+            variant="contained"
+            onClick={handleClick}
+          >
+            Create
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            color="customDarkGrey"
+            variant="contained"
+            onClick={handleJoin}
+          >
+            Join Room
+          </Button>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
