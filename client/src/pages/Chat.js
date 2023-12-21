@@ -1,17 +1,26 @@
 import React from "react";
-import { Box, Button, Grid, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  TextField,
+  Typography,
+  Paper,
+  useTheme,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import socket from "../utils/socket";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import ChatBox from "../components/ChatBox";
 
 function Chat() {
-  const [message, setMessage] = useState("");
-  //const [chatMessages, setChatMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const { roomCode } = useParams();
   const [userJoined, setUserJoined] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,54 +76,47 @@ function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userJoined, roomCode]);
 
-  const handleClick = () => {
-    socket.emit("chatMessage", message);
-    setMessage("");
-  };
-
   const handleChatMessages = (data) => {
-    console.log(data);
-    //setChatMessages((prevMessages) => [...prevMessages, data]);
+    // Generate a unique key for the message
+    const messageKey = new Date().toISOString(); // You can use a more sophisticated method if needed
+
+    // Update the state to include the new message
+    setChatMessages((prevMessages) => [
+      ...prevMessages,
+      {
+        key: messageKey,
+        username: data.username,
+        message: data.message,
+        mine: data.username === user.username,
+      },
+    ]);
   };
 
   const handleJoinRoom = (data) => {
-    console.log("made it here");
     console.log(data);
   };
 
   const handleLeaveRoom = (data) => {
-    console.log("made it here 2");
     console.log(data);
   };
 
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      style={{ height: "100vh" }}
-      sx={{ backgroundColor: "rgb(70, 70, 70)" }}
+      sx={{
+        backgroundColor: "rgb(70, 70, 70)",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
-      <Grid container direction="column" alignItems="center" spacing={2}>
-        <Grid item>
-          <TextField
-            id="message"
-            label="Message"
-            variant="outlined"
-            onChange={(e) => setMessage(e.target.value)}
-            autoComplete="username"
-            error={false}
-            value={message}
-          />
-        </Grid>
-        <Grid item>
-          <Button variant="contained" onClick={handleClick}>
-            Send Message
-          </Button>
-        </Grid>
-      </Grid>
+      <ChatBox chatMessages={chatMessages}></ChatBox>
     </Box>
   );
 }
 
 export default Chat;
+
+{
+}

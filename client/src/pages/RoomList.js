@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Grid,
+  useTheme,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -21,21 +22,18 @@ const columns = [
     label: "Code",
     minWidth: "33.3333%",
     align: "left",
-    color: "rgb(186, 137, 86)",
   },
   {
     id: "users",
     label: "# Users",
     minWidth: "33.3333%",
     align: "left",
-    color: "rgb(188, 44, 42)",
   },
   {
     id: "Button",
     label: "",
     minWidth: "33.33333%",
     align: "left",
-    color: "rgb(77, 110, 208)",
   },
 ];
 
@@ -44,6 +42,7 @@ function RoomList() {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [roomsLoaded, setRoomsLoaded] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -113,7 +112,7 @@ function RoomList() {
             <Paper sx={{ width: "100%", overflow: "hidden" }}>
               <TableContainer sx={{ maxHeight: "440px" }}>
                 <Table stickyHeader size="small" aria-label="simple table">
-                  <TableHead>
+                  <TableHead sx={{ backgroundColor: "blue" }}>
                     <TableRow>
                       {columns.map((column) => (
                         <TableCell
@@ -121,8 +120,9 @@ function RoomList() {
                           align="center"
                           style={{
                             minWidth: column.minWidth,
-                            color: column.color,
+                            color: theme.palette.customDarkGrey.contrastText,
                             fontWeight: "bold",
+                            backgroundColor: theme.palette.customDarkGrey.main,
                           }}
                         >
                           {column.label}
@@ -136,15 +136,28 @@ function RoomList() {
                         key={val.entryCode}
                         sx={{
                           "&:last-child td, &:last-child th": { border: 0 },
+                          backgroundColor: theme.palette.customDarkGrey.main,
                         }}
                       >
-                        <TableCell align="center">{val.entryCode}</TableCell>
-                        <TableCell align="center">
+                        <TableCell
+                          sx={{
+                            color: theme.palette.customDarkGrey.contrastText,
+                          }}
+                          align="center"
+                        >
+                          {val.entryCode}
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{
+                            color: theme.palette.customDarkGrey.contrastText,
+                          }}
+                        >
                           {val.players.length}
                         </TableCell>
                         <TableCell align="center">
                           <Button
-                            color="customDarkGrey"
+                            color="secondary"
                             variant="contained"
                             size="small"
                             onClick={() => handleClick(val.entryCode)}
@@ -160,7 +173,13 @@ function RoomList() {
             </Paper>
           </Grid>
           <Grid item>
-            <Button color="customDarkGrey" variant="contained">
+            <Button
+              color="customDarkGrey"
+              variant="contained"
+              onClick={() => {
+                console.log(theme);
+              }}
+            >
               Fetch Rooms
             </Button>
           </Grid>
