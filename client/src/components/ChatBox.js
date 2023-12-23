@@ -1,13 +1,6 @@
 import React from "react";
 import { useState, useRef, useEffect } from "react";
-import {
-  Button,
-  Grid,
-  TextField,
-  Typography,
-  Paper,
-  useTheme,
-} from "@mui/material";
+import { Grid, TextField, Paper, useTheme } from "@mui/material";
 import socket from "../utils/socket";
 import ChatMessage from "./ChatMessage";
 
@@ -16,97 +9,86 @@ const ChatBox = ({ chatMessages }) => {
   const theme = useTheme();
   const containerRef = useRef();
 
-  const handleClick = () => {
+  const handleSubmit = (event) => {
+    event.preventDefault();
     if (message === "" || message === null) return;
     socket.emit("chatMessage", message);
     setMessage("");
   };
 
   useEffect(() => {
-    // Scroll to the bottom when chatMessages change
     containerRef.current.scrollTop = containerRef.current.scrollHeight;
   }, [chatMessages]);
 
   return (
-    <Paper
-      sx={{
-        backgroundColor: theme.palette.customDarkGrey.main,
-        padding: "15px",
-        width: "600px",
-        height: "600px",
-      }}
-    >
-      <Grid
-        container
-        direction="column"
-        justifyContent="flex-end"
-        alignItems="center"
+    <form onSubmit={handleSubmit}>
+      <Paper
         sx={{
-          //   border: 1,
-          //   borderColor: "#ffffff",
-          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          backgroundColor: theme.palette.customDarkGrey.main,
+          padding: "15px",
         }}
       >
         <Grid
-          item
           container
           direction="column"
-          justifyContent="flex-start"
-          sx={{
-            // border: 1,
-            // borderColor: "#ff0000",
-            maxHeight: `calc(100% - 45px)`,
-            overflowY: "auto",
-            flexWrap: "nowrap", // Add this line
-          }}
-          ref={containerRef}
-        >
-          {chatMessages.map((m) => (
-            <Grid item container key={m.key}>
-              <ChatMessage message={m} />
-            </Grid>
-          ))}
-        </Grid>
-        <Grid
-          item
-          container
-          sx={{ pt: "5px" }}
-          display="row"
-          direction="row"
-          justifyContent="space-between"
+          justifyContent="flex-end"
           alignItems="center"
+          sx={{
+            height: "100%",
+          }}
         >
-          <TextField
-            id="message"
-            label="Message"
-            variant="outlined"
-            onChange={(e) => setMessage(e.target.value)}
-            autoComplete="off"
-            error={false}
-            value={message}
-            focused
-            color="primary"
-            size="small"
+          <Grid
+            item
+            container
+            direction="column"
+            justifyContent="flex-start"
             sx={{
-              width: "80%",
-              minWidth: "320px",
-              "& input": { color: "white" },
+              maxHeight: `calc(100% - 42px)`,
+              overflowY: "auto",
+              flexWrap: "nowrap", // Add this line
             }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleClick}
-            size="small"
-            sx={{
-              width: "18%",
-            }}
+            ref={containerRef}
           >
-            Send
-          </Button>
+            {chatMessages.map((m) => (
+              <Grid item container key={m.key}>
+                <ChatMessage message={m} />
+              </Grid>
+            ))}
+          </Grid>
+          <Grid
+            item
+            container
+            sx={{ pt: "6px" }}
+            display="row"
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <TextField
+              id="message"
+              variant="outlined"
+              onChange={(e) => setMessage(e.target.value)}
+              autoComplete="off"
+              error={false}
+              value={message}
+              focused
+              color="primary"
+              size="small"
+              sx={{
+                width: "100%",
+                minWidth: "320px",
+                "& input": { color: "white", borderColor: "red", fontSize: 13 },
+              }}
+            />
+          </Grid>
         </Grid>
-      </Grid>
-    </Paper>
+      </Paper>
+    </form>
   );
 };
 

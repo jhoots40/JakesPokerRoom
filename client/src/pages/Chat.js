@@ -1,18 +1,10 @@
 import React from "react";
-import {
-  Box,
-  Button,
-  Grid,
-  TextField,
-  Typography,
-  Paper,
-  useTheme,
-} from "@mui/material";
 import { useEffect, useState } from "react";
 import socket from "../utils/socket";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import ChatBox from "../components/ChatBox";
+import "./test.css";
 
 function Chat() {
   const [chatMessages, setChatMessages] = useState([]);
@@ -20,7 +12,6 @@ function Chat() {
   const [user, setUser] = useState(null);
   const { roomCode } = useParams();
   const [userJoined, setUserJoined] = useState(false);
-  const theme = useTheme();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,8 +24,8 @@ function Chat() {
     axios
       .get("http://localhost:5000/api/users/get-info", config)
       .then((response) => {
-        setUserJoined(true);
         setUser(response.data);
+        setUserJoined(true);
       })
       .catch((error) => {
         if (axios.isCancel(error)) {
@@ -101,22 +92,24 @@ function Chat() {
   };
 
   return (
-    <Box
-      sx={{
-        backgroundColor: "rgb(70, 70, 70)",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <ChatBox chatMessages={chatMessages}></ChatBox>
-    </Box>
+    // <Box
+    //   sx={{
+    //     border: 3,
+    //     borderColor: "red",
+    //     position: "relative",
+    //     width: "600px",
+    //     height: "600px",
+    //     bottom: 0,
+    //   }}
+    // >
+    //   <ChatBox chatMessages={chatMessages}></ChatBox>
+    // </Box>
+    <div className="container">
+      <div className="chat">
+        <ChatBox chatMessages={chatMessages}></ChatBox>
+      </div>
+    </div>
   );
 }
 
 export default Chat;
-
-{
-}

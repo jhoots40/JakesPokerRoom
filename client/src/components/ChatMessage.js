@@ -1,5 +1,5 @@
 import React from "react";
-import { Paper, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useTheme, Grid, Avatar } from "@mui/material";
 
 const MessageBubble = ({ message }) => {
@@ -8,49 +8,36 @@ const MessageBubble = ({ message }) => {
   return (
     <Grid
       container
-      justifyContent={message.mine ? "flex-end" : "flex-start"}
+      justifyContent="flex-start"
       flexWrap="wrap"
-      alignItems="flex-end"
-      sx={{ padding: 1 }}
+      alignItems="flex-start"
+      sx={{ padding: "4px" }}
     >
-      {!message.mine ? (
-        <>
-          <Grid item>
-            <Avatar sx={{ width: "30px", height: "30px" }}></Avatar>
-          </Grid>
-          <Grid item>
-            <Typography sx={{ ml: "10px" }} color={theme.palette.primary.main}>
-              {message.username + ":"}
-            </Typography>
-          </Grid>
-          <Grid item sx={{ maxWidth: "60%" }}>
-            <Typography
-              sx={{ ml: "4px", wordWrap: "break-word" }}
-              color={theme.palette.primary.contrastText}
-            >
-              {message.message}
-            </Typography>
-          </Grid>
-        </>
-      ) : (
-        <>
-          <Grid item sx={{ maxWidth: "60%" }}>
-            <Typography
-              sx={{
-                mr: "10px",
-                fontWeight: "bold",
-                wordWrap: "break-word",
-              }}
-              color={theme.palette.secondary.main}
-            >
-              {message.message}
-            </Typography>
-          </Grid>
-          <Grid item>
-            <Avatar sx={{ width: "30px", height: "30px" }}></Avatar>
-          </Grid>
-        </>
-      )}
+      <>
+        <Grid item>
+          <Avatar sx={{ width: "21px", height: "21px" }}></Avatar>
+        </Grid>
+        <Grid item>
+          <Typography
+            sx={{ ml: "10px", fontWeight: "bold", fontSize: 13 }}
+            color={
+              message.mine
+                ? theme.palette.secondary.main
+                : theme.palette.primary.main
+            }
+          >
+            {message.username + ":"}
+          </Typography>
+        </Grid>
+        <Grid item sx={{ maxWidth: "80%" }}>
+          <Typography
+            sx={{ ml: "4px", wordWrap: "break-word", fontSize: 13 }}
+            color={theme.palette.primary.contrastText}
+          >
+            {message.message}
+          </Typography>
+        </Grid>
+      </>
     </Grid>
     // </Paper>
   );

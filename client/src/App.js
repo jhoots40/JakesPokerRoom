@@ -8,6 +8,7 @@ import Join from "./pages/Join";
 import RoomList from "./pages/RoomList";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
 
 let theme = createTheme({
   palette: {
@@ -20,6 +21,12 @@ let theme = createTheme({
     customDarkGrey: {
       main: "#141414",
     },
+    background: {
+      default: "rgb(70, 70, 70)",
+    },
+  },
+  form: {
+    width: "100%", // Set the width to 100%
   },
 });
 
@@ -38,14 +45,16 @@ theme = createTheme(theme, {
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Signup />} />
-        <Route path="/chat/:roomCode" element={<Chat />} />
-        <Route path="/join" element={<Join />} />
-        <Route path="/rooms" element={<RoomList />} />
-      </Routes>
+      <CssBaseline>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Signup />} />
+          <Route path="/chat/:roomCode" element={<Chat />} />
+          <Route path="/join" element={<Join />} />
+          <Route path="/rooms" element={<RoomList />} />
+        </Routes>
+      </CssBaseline>
     </ThemeProvider>
   );
 }

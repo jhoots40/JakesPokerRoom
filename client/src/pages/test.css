@@ -1,0 +1,16 @@
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+.chat {
+  position: absolute;
+  min-width: 500px;
+  top: 80%;
+  bottom: 0;
+  left: 0;
+  right: 70%;
+  z-index: 1;
+}
