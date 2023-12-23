@@ -92,18 +92,6 @@ function Chat() {
   };
 
   return (
-    // <Box
-    //   sx={{
-    //     border: 3,
-    //     borderColor: "red",
-    //     position: "relative",
-    //     width: "600px",
-    //     height: "600px",
-    //     bottom: 0,
-    //   }}
-    // >
-    //   <ChatBox chatMessages={chatMessages}></ChatBox>
-    // </Box>
     <div className="container">
       <div className="chat">
         <ChatBox chatMessages={chatMessages}></ChatBox>
