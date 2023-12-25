@@ -42,7 +42,7 @@ function Home() {
   const handleClick = () => {
     socket.emit("createRoom", (response) => {
       if (response.success) {
-        navigate(`/chat/${response.entryCode}`);
+        navigate(`/room/${response.entryCode}`);
       } else {
         console.error("Error creating room:", response.error);
       }

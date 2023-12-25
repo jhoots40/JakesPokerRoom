@@ -96,7 +96,7 @@ function RoomList() {
   }, [roomsLoaded]);
 
   const handleClick = (entryCode) => {
-    navigate(`/chat/${entryCode}`);
+    navigate(`/room/${entryCode}`);
     //console.count(entryCode);
   };
   return (

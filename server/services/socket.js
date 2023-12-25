@@ -12,10 +12,22 @@ module.exports = (io) => {
       // generate a new room
       const newRoom = await Room.createRoom();
 
-      console.log(newRoom);
+      //generate a new game object !!!
+      const gameObject = {
+        seats: [],
+        button: 0,
+        activeRound: {
+          type: "test",
+          turn: 0,
+          actions: [],
+        },
+      };
 
-      // TODO: generate game state object
-      redisClient.lPush(`rooms`, JSON.stringify(newRoom));
+      // Save gamestate to redis
+      await redisClient.set(
+        newRoom.entryCode.toString(),
+        JSON.stringify(gameObject)
+      );
 
       //report success to client
       callback({ success: true, entryCode: newRoom.entryCode });
@@ -74,19 +86,36 @@ module.exports = (io) => {
       });
     });
 
-    socket.on("action", (entryCode) => {
+    socket.on("action", async (action) => {
       //restart the interval
-      io.to(entryCode).emit("timerUpdate", 60);
+      io.to(socket.entryCode).emit("timerUpdate", 60);
       clearInterval(timers[socket.entryCode].interval);
       timers[socket.entryCode].interval = setInterval(() => {
-        console.log(`Timer on room ${entryCode}: ${timers[entryCode].time}`);
-        io.to(entryCode).emit("timerUpdate", timers[entryCode].time--);
+        console.log(
+          `Timer on room ${socket.entryCode}: ${timers[socket.entryCode].time}`
+        );
+        io.to(socket.entryCode).emit(
+          "timerUpdate",
+          timers[socket.entryCode].time--
+        );
       }, 1000);
+      timers[socket.entryCode].time = 59;
 
-      timers[entryCode].time = 59;
+      //retrieve the gamestate object from redis
+      const goString = await redisClient.get(socket.entryCode.toString());
+      let currentGO = JSON.parse(goString);
+      console.log(currentGO);
+
+      //call game logic function too handle action
+      //updateGame(gameObject, action)
+
+      //emit updated game object to the frontend
+      currentGO.activeRound.actions.push(action);
+      io.to(socket.entryCode).emit("gameUpdate", currentGO);
     });
 
     socket.on("leaveRoom", async () => {
+      //TODO: CLEAN THIS FUNCTION IT IS DISGUSTING
       if (socket.username == null || socket.entryCode == null) return;
 
       const username = socket.username;
@@ -98,6 +127,7 @@ module.exports = (io) => {
           user.username
         );
         if (!updatedRoom) {
+          redisClient.del(socket.entryCode);
           clearInterval(timers[socket.entryCode].interval);
           delete timers[socket.entryCode];
         }

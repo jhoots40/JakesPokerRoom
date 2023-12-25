@@ -7,7 +7,7 @@ import ChatBox from "../components/ChatBox";
 import "./test.css";
 import { Button, Box } from "@mui/material";
 
-function Chat() {
+function Room() {
   const [chatMessages, setChatMessages] = useState([]);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -52,6 +52,7 @@ function Chat() {
       socket.on("userJoined", handleJoinRoom);
       socket.on("userLeft", handleLeaveRoom);
       socket.on("timerUpdate", handleTimerUpdate);
+      socket.on("gameUpdate", handleGameUpdate);
       socket.emit("joinRoom", roomCode, user.username, (response) => {
         if (!response.success) {
           alert("room doesn't exist");
@@ -60,6 +61,7 @@ function Chat() {
       });
       return () => {
         socket.emit("leaveRoom");
+        socket.off("gameUpdate", handleGameUpdate);
         socket.off("timerUpdate", handleTimerUpdate);
         socket.off("userLeft", handleLeaveRoom);
         socket.off("userJoined", handleJoinRoom);
@@ -89,7 +91,6 @@ function Chat() {
   };
 
   const handleTimerUpdate = (data) => {
-    console.log(data);
     setTimer(data);
   };
 
@@ -101,8 +102,50 @@ function Chat() {
     console.log(data);
   };
 
-  const handleAction = () => {
-    socket.emit("action", roomCode);
+  const handleGameUpdate = (data) => {
+    console.log(data);
+  };
+
+  const sendPost = () => {
+    const action = {
+      type: "post",
+    };
+    socket.emit("action", action);
+  };
+
+  const sendCheck = () => {
+    const action = {
+      type: "check",
+    };
+    socket.emit("action", action);
+  };
+
+  const sendRaise = () => {
+    const action = {
+      type: "raise",
+    };
+    socket.emit("action", action);
+  };
+
+  const sendCall = () => {
+    const action = {
+      type: "call",
+    };
+    socket.emit("action", action);
+  };
+
+  const sendFold = () => {
+    const action = {
+      type: "fold",
+    };
+    socket.emit("action", action);
+  };
+
+  const sendShow = () => {
+    const action = {
+      type: "show",
+    };
+    socket.emit("action", action);
   };
 
   return (
@@ -115,11 +158,52 @@ function Chat() {
       >
         <h1>{timer}</h1>
         <Button
+          sx={{ m: 0.5 }}
           color="customDarkGrey"
           variant="contained"
-          onClick={handleAction}
+          onClick={sendPost}
         >
-          Reset
+          Post
+        </Button>
+        <Button
+          sx={{ m: 0.5 }}
+          color="customDarkGrey"
+          variant="contained"
+          onClick={sendCheck}
+        >
+          Check
+        </Button>
+        <Button
+          sx={{ m: 0.5 }}
+          color="customDarkGrey"
+          variant="contained"
+          onClick={sendRaise}
+        >
+          Raise
+        </Button>
+        <Button
+          sx={{ m: 0.5 }}
+          color="customDarkGrey"
+          variant="contained"
+          onClick={sendCall}
+        >
+          Call
+        </Button>
+        <Button
+          sx={{ m: 0.5 }}
+          color="customDarkGrey"
+          variant="contained"
+          onClick={sendFold}
+        >
+          Fold
+        </Button>
+        <Button
+          sx={{ m: 0.5 }}
+          color="customDarkGrey"
+          variant="contained"
+          onClick={sendShow}
+        >
+          Show
         </Button>
       </Box>
       <div className="chat">
@@ -129,4 +213,4 @@ function Chat() {
   );
 }
 
-export default Chat;
+export default Room;

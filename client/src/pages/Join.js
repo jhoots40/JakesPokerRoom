@@ -7,7 +7,7 @@ import axios from "axios";
 function Join() {
   const [code, setCode] = useState();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  //const [user, setUser] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -20,7 +20,7 @@ function Join() {
     axios
       .get("http://localhost:5000/api/users/get-info", config)
       .then((response) => {
-        setUser(response.data);
+        //setUser(response.data);
       })
       .catch((error) => {
         if (axios.isCancel(error)) {
@@ -36,10 +36,10 @@ function Join() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [navigate]);
 
   const handleClick = () => {
-    navigate(`/chat/${code}`);
+    navigate(`/room/${code}`);
   };
 
   return (
