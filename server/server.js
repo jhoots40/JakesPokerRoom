@@ -8,6 +8,7 @@ const socketIo = require("socket.io");
 const userRoutes = require("./routes/userRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const socketLogic = require("./services/socket");
+const redisClient = require("./config/redis");
 
 // Load environment variables from .env file (only in development)
 if (process.env.NODE_ENV !== "production") {
@@ -67,3 +68,5 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = io;

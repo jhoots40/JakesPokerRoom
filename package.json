@@ -10,7 +10,7 @@
   "scripts": {
     "test": "jest",
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js",
+    "dev": "concurrently -n 'redis,nodejs' -c 'red,green' \"redis-server\" \"nodemon server/server.js\"",
     "client": "cd client && yarn start",
     "mern": "concurrently -n 'server,client' -c 'yellow,blue' \"yarn run dev\" \"yarn run client\"",
     "heroku-postbuild": "cd client && yarn install && yarn run build"
@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "mocha": "^10.2.0",
     "mongoose": "^6.9.1",
+    "redis": "^4.6.12",
     "socket.io": "^4.7.2"
   },
   "devDependencies": {

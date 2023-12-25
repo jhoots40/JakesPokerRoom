@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import ChatBox from "../components/ChatBox";
 import "./test.css";
+import { Button, Box } from "@mui/material";
 
 function Chat() {
   const [chatMessages, setChatMessages] = useState([]);
@@ -12,6 +13,7 @@ function Chat() {
   const [user, setUser] = useState(null);
   const { roomCode } = useParams();
   const [userJoined, setUserJoined] = useState(false);
+  const [timer, setTimer] = useState(60);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -49,6 +51,7 @@ function Chat() {
       socket.on("chatMessage", handleChatMessages);
       socket.on("userJoined", handleJoinRoom);
       socket.on("userLeft", handleLeaveRoom);
+      socket.on("timerUpdate", handleTimerUpdate);
       socket.emit("joinRoom", roomCode, user.username, (response) => {
         if (!response.success) {
           alert("room doesn't exist");
@@ -57,6 +60,7 @@ function Chat() {
       });
       return () => {
         socket.emit("leaveRoom");
+        socket.off("timerUpdate", handleTimerUpdate);
         socket.off("userLeft", handleLeaveRoom);
         socket.off("userJoined", handleJoinRoom);
         socket.off("chatMessage", handleChatMessages);
@@ -68,6 +72,7 @@ function Chat() {
   }, [userJoined, roomCode]);
 
   const handleChatMessages = (data) => {
+    console.log(data);
     // Generate a unique key for the message
     const messageKey = new Date().toISOString(); // You can use a more sophisticated method if needed
 
@@ -83,6 +88,11 @@ function Chat() {
     ]);
   };
 
+  const handleTimerUpdate = (data) => {
+    console.log(data);
+    setTimer(data);
+  };
+
   const handleJoinRoom = (data) => {
     console.log(data);
   };
@@ -91,8 +101,27 @@ function Chat() {
     console.log(data);
   };
 
+  const handleAction = () => {
+    socket.emit("action", roomCode);
+  };
+
   return (
     <div className="container">
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+      >
+        <h1>{timer}</h1>
+        <Button
+          color="customDarkGrey"
+          variant="contained"
+          onClick={handleAction}
+        >
+          Reset
+        </Button>
+      </Box>
       <div className="chat">
         <ChatBox chatMessages={chatMessages}></ChatBox>
       </div>
