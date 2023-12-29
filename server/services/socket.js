@@ -1,7 +1,7 @@
 const Room = require("./../models/room");
 const User = require("./../models/user");
 const redisClient = require("./../config/redis");
-const processAction = require("./pokerLogic");
+const pokerLogic = require("./pokerLogic");
 const Timer = require("./Timer");
 
 const timers = {}; // Keep track of timers for each room
@@ -14,53 +14,8 @@ module.exports = (io) => {
             // generate a new room
             const newRoom = await Room.createRoom();
 
-            //generate a new game object !!!
-            const gameObject = {
-                seats: [
-                    {
-                        id: 0,
-                        username: null,
-                        balance: 0,
-                    },
-                    {
-                        id: 1,
-                        username: null,
-                        balance: 0,
-                    },
-                    {
-                        id: 2,
-                        username: null,
-                        balance: 0,
-                    },
-                    {
-                        id: 3,
-                        username: null,
-                        balance: 0,
-                    },
-                    {
-                        id: 4,
-                        username: null,
-                        balance: 0,
-                    },
-                    {
-                        id: 5,
-                        username: null,
-                        balance: 0,
-                    },
-                ],
-                button: 0,
-                activeRound: {
-                    type: "test",
-                    turn: 0,
-                    actions: [],
-                },
-            };
-
-            // Save gamestate to redis
-            await redisClient.set(
-                newRoom.entryCode.toString(),
-                JSON.stringify(gameObject),
-            );
+            // generate new game state for the new entryCode
+            await pokerLogic.newGameState(newRoom.entryCode);
 
             //report success to client
             callback({ success: true, entryCode: newRoom.entryCode });
@@ -70,24 +25,6 @@ module.exports = (io) => {
             try {
                 // Update mongodb with the new user
                 await Room.addPlayer(entryCode, username);
-
-                // Update redis with the new user
-                const gameObjectString = await redisClient.get(entryCode);
-                let gameObject = JSON.parse(gameObjectString);
-                let i = 0;
-                for (i; i < gameObject.seats.length; i++) {
-                    if (!gameObject.seats[i].username) {
-                        gameObject.seats[i].username = username;
-                        break;
-                    }
-                }
-                await redisClient.set(
-                    entryCode.toString(),
-                    JSON.stringify(gameObject),
-                );
-
-                // let client know it was a success
-                callback({ success: true, seat: i });
 
                 // Update socket data
                 socket.join(entryCode);
@@ -99,18 +36,40 @@ module.exports = (io) => {
                     timers[entryCode] = new Timer(
                         entryCode,
                         15,
-                        (currentTime) => {
+                        async (finished, currentTime) => {
+                            if (finished) {
+                                await pokerLogic.processAction(
+                                    entryCode,
+                                    {
+                                        type: "fold",
+                                    },
+                                    (updatedState) => {
+                                        io.to(entryCode).emit(
+                                            "gameUpdate",
+                                            updatedState,
+                                        );
+                                    },
+                                );
+                            }
                             io.to(entryCode).emit("timerUpdate", currentTime);
                         },
                     );
                     timers[entryCode].start();
                 }
 
-                // let other users know that new user has joined
-                io.to(entryCode).emit("userJoined", {
-                    message: `${username} joined room ${entryCode}`,
-                    gameObject: gameObject,
-                });
+                // update game state with new player
+                pokerLogic.addPlayer(
+                    entryCode,
+                    username,
+                    (updatedState, seat) => {
+                        // let other users know that new user has joined
+                        callback({ success: true, seat: seat });
+                        io.to(entryCode).emit("userJoined", {
+                            message: `${username} joined room ${entryCode}`,
+                            gameObject: updatedState,
+                        });
+                    },
+                );
 
                 //debugging
                 console.log(`${username} joined room ${entryCode}`);
@@ -132,82 +91,41 @@ module.exports = (io) => {
         });
 
         socket.on("action", async (action, entryCode) => {
-            //retrieve the gamestate object from redis
-            const gameObjectString = await redisClient.get(
-                entryCode.toString(),
+            //call game logic function to handle action
+            //users might be able to send multiple actions to the server before I emit the new game update,
+            //i belive this should be solved with race condition
+            //I think the way I solve this is whatever action gets received first is the one that is handled,
+            //if any action reaches the lock and it is not avvailable, that action is lost
+
+            //we need a seperate logic, for the case where a user tries to join the room and we recieve an action update at the
+            //same time
+            await pokerLogic.processAction(
+                entryCode,
+                action,
+                (updatedState) => {
+                    //emit updated game object to the frontend
+                    io.to(entryCode).emit("gameUpdate", updatedState);
+                },
             );
-            let gameObject = JSON.parse(gameObjectString);
 
             //restart the interval
             timers[entryCode].stop();
             io.to(entryCode).emit("timerUpdate", 15);
             timers[entryCode].start();
-
-            //call game logic function too handle action
-            processAction(gameObject, action);
-
-            //emit updated game object to the frontend
-            io.to(entryCode).emit("gameUpdate", gameObject);
-
-            //save updated object back to memory using redis
-            // Save gamestate to redis
-            await redisClient.set(
-                entryCode.toString(),
-                JSON.stringify(gameObject),
-            );
         });
 
         socket.on("leaveRoom", async (entryCode) => {
-            //TODO: CLEAN THIS FUNCTION IT IS DISGUSTING
-            if (socket.username == null || entryCode == null) return;
-
-            const username = socket.username;
-            const user = await User.findOne({ username });
-
-            try {
-                socket.leave(entryCode);
-
-                //remove player from memory in redis
-                const gameObjectString = await redisClient.get(entryCode);
-                let gameObject = JSON.parse(gameObjectString);
-                for (let i = 0; i < gameObject.seats.length; i++) {
-                    if (gameObject.seats[i].username === socket.username) {
-                        gameObject.seats[i].username = null;
-                        break;
-                    }
-                }
-                await redisClient.set(
-                    entryCode.toString(),
-                    JSON.stringify(gameObject),
-                );
-
-                //remove player from mongodb
-                const updatedRoom = await Room.removePlayer(
-                    entryCode,
-                    user.username,
-                );
-
-                //if room is empty delete room
-                if (!updatedRoom) {
-                    console.log("made it here", updatedRoom);
-                    console.log(timers);
-                    console.log(entryCode);
-                    redisClient.del(entryCode);
-                    timers[entryCode].stop();
-                    delete timers[entryCode];
-                }
-
-                //log to backend and frontend
-                io.to(socket.entryCode).emit("userLeft", {
-                    message: `${socket.username} left room ${entryCode}`,
-                    gameObject: gameObject,
+            if (socket.username && socket.entryCode) {
+                console.log("NORMAL DISCONNECT");
+                leaveRoom(socket.username, socket.entryCode).then(() => {
+                    socket.leave(socket.entryCode);
+                    socket.username = null;
+                    socket.entryCode = null;
                 });
-                console.log(`${socket.username} left room ${entryCode}`);
-
-                socket.username = null;
-                entryCode = null;
-            } catch (error) {
-                console.error(error.message);
+            } else {
+                console.error(
+                    "socket.username and/or socket.entryCode is null when leaving rooms",
+                );
             }
         });
 
@@ -215,11 +133,7 @@ module.exports = (io) => {
         socket.on("disconnect", (username) => {
             if (socket.username && socket.entryCode) {
                 console.log("FORCED DISCONNECT");
-                // TODO: SLOPPY IMPLEMENTATION FIX LATER
                 leaveRoom(socket.username, socket.entryCode).then(() => {
-                    console.log(
-                        `${socket.username} left room ${socket.entryCode}`,
-                    );
                     socket.leave(socket.entryCode);
                     socket.username = null;
                     socket.entryCode = null;
@@ -229,35 +143,36 @@ module.exports = (io) => {
         });
 
         async function leaveRoom(username, entryCode) {
-            //remove player from memory in redis
-            const gameObjectString = await redisClient.get(socket.entryCode);
-            let gameObject = JSON.parse(gameObjectString);
-            for (let i = 0; i < gameObject.seats.length; i++) {
-                if (gameObject.seats[i].username === socket.username) {
-                    gameObject.seats[i].username = null;
-                    break;
-                }
-            }
-            await redisClient.set(
-                socket.entryCode.toString(),
-                JSON.stringify(gameObject),
-            );
-            const user = await User.findOne({ username });
-
             try {
+                //remove player from memory in redis
+                await pokerLogic.delPlayer(
+                    entryCode,
+                    username,
+                    (updatedState) => {
+                        //log to backend and frontend
+                        io.to(entryCode).emit("userLeft", {
+                            message: `${username} left room ${entryCode}`,
+                            gameObject: updatedState,
+                        });
+                    },
+                );
+
+                //remove player from mongodb
                 const updatedRoom = await Room.removePlayer(
                     entryCode,
                     username,
                 );
+
+                //if room is empty delete room
                 if (!updatedRoom) {
-                    clearInterval(timers[entryCode].interval);
+                    pokerLogic.deleteGameState(entryCode);
+                    timers[entryCode].stop();
                     delete timers[entryCode];
                 }
-                io.to(entryCode).emit("userLeft", {
-                    message: `${username} left room ${entryCode}`,
-                });
-            } catch (error) {
-                console.error(error.message);
+
+                console.log(`${username} left room ${entryCode}`);
+            } catch (e) {
+                console.error(e);
             }
         }
     });

@@ -8,36 +8,21 @@ class Timer {
 
     start() {
         this.time = 14;
-        this.interval = setInterval(() => {
+        this.interval = setInterval(async () => {
             const startTime = new Date();
             if (this.time < 1) {
-                // TODO: process game update
-
-                //             let gameObjectString = await redisClient.get(
-                //                 entryCode.toString(),
-                //             );
-                //             let gameObject = JSON.parse(gameObjectString);
-                //             processAction(gameObject, { type: "fold" });
-                //             await redisClient.set(
-                //                 entryCode.toString(),
-                //                 JSON.stringify(gameObject),
-                //             );
-                //             timers[entryCode].time = 10;
-                //             io.to(entryCode).emit("gameUpdate", gameObject);
-
-                // restart timer
                 this.time = 15;
-            }
-            this.callback(this.time--);
+                this.callback(true, this.time--);
+            } else this.callback(false, this.time--);
             const endTime = new Date();
             const runtime = endTime - startTime;
-            console.log("interval function runtime:", runtime, "ms");
+            //console.log("interval function runtime:", runtime, "ms");
         }, 1000);
     }
 
     stop() {
         clearInterval(this.interval);
-        console.log(`Timer ${this.entryCode} stopped`);
+        //console.log(`Timer ${this.entryCode} stopped`);
     }
 }
 
