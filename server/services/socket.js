@@ -36,7 +36,7 @@ module.exports = (io) => {
                         15,
                         async (finished, currentTime) => {
                             if (finished) {
-                                await pokerLogic.processAction(
+                                pokerLogic.processAction(
                                     entryCode,
                                     {
                                         type: "fold",

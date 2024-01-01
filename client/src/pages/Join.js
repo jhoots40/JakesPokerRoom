@@ -50,33 +50,64 @@ function Join() {
 
     return (
         <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            style={{ height: "100vh" }}
+            sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: "150px",
+                height: "150px",
+                border: `2px solid black`,
+                transform: "translate(-50%, -50%)",
+            }}
         >
-            {/* <Grid container direction="column" alignItems="center" spacing={2}>
-        <Grid item>
-          <TextField
-            id="code"
-            label="Code"
-            variant="outlined"
-            onChange={(e) => setCode(e.target.value)}
-            autoComplete="username"
-            error={false}
-            type="number"
-          />
-        </Grid>
-        <Grid item>
-          <Button variant="contained" onClick={handleClick}>
-            Join Room
-          </Button>
-        </Grid>
-      </Grid> */}
-            <div className="deal">
-                {/* Your deal content goes here */}
-                <p>Your deal content</p>
-            </div>
+            <Box
+                sx={{
+                    position: "absolute",
+                    width: "70%",
+                    height: "70%",
+                    top: 0, // Set top to 0 to make the top of the box touch the top of the container
+                    left: "50%",
+                    transform: "translateX(-50%)", // Center the box horizontally
+                    border: `2px solid green`,
+                    zIndex: 1,
+                }}
+            ></Box>
+            <Box
+                sx={{
+                    position: "absolute",
+                    height: "40%",
+                    width: "100%",
+                    top: "60%", // Adjusted to position the box 70% away from the top of the outer box
+                    border: `2px solid red`,
+                    zIndex: 3,
+                }}
+            ></Box>
+            <Box
+                sx={{
+                    position: "absolute",
+                    height: "62.85%",
+                    width: "45%",
+                    bottom: "15%", // Adjusted to raise the box more in the middle
+                    left: "5%", // Adjusted to position the box to the left
+                    border: `2px solid blue`,
+                    borderRadius: "10px",
+                    zIndex: 2,
+                    transform: "rotate(-3deg)", // Applied rotation for a slight tilt
+                }}
+            ></Box>
+            <Box
+                sx={{
+                    position: "absolute",
+                    height: "62.85%",
+                    width: "45%",
+                    bottom: "15%", // Adjusted to raise the box more in the middle
+                    right: "5%", // Adjusted to position the box to the right
+                    border: `2px solid blue`,
+                    borderRadius: "10px",
+                    zIndex: 2,
+                    transform: "rotate(3deg)", // Applied rotation for a slight tilt
+                }}
+            ></Box>
         </Box>
     );
 }

@@ -21,3 +21,18 @@
     z-index: 1;
     border: 1 solid;
 }
+
+.card-container {
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.card {
+    width: 1300%;
+    height: 400%;
+    background-image: url("/Users/houtsjake/Desktop/JakesPokerRoom/playingCards.jpeg");
+    background-size: cover;
+}

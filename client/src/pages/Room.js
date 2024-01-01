@@ -6,6 +6,7 @@ import axios from "axios";
 import ChatBox from "../components/ChatBox";
 import "./test.css";
 import { Button, Box, Grid, Typography, Avatar } from "@mui/material";
+import PokerSeat from "./PokerSeat";
 
 const seats = [
     { id: 0, top: "75%", left: "50%" },
@@ -98,7 +99,7 @@ function Room() {
 
     useEffect(() => {
         if (gameState) {
-            //console.log("Logging Game State: ", gameState);
+            console.log("Logging Game State: ", gameState);
 
             if (gameState.activeRound.turn === seat) {
                 //console.log("IT IS YOUR TURN!!");
@@ -126,7 +127,7 @@ function Room() {
     };
 
     const handleTimerUpdate = (data) => {
-        console.count();
+        //console.count();
         setTimer(data);
     };
 
@@ -194,6 +195,50 @@ function Room() {
         } else return;
     }
 
+    function renderSeats() {
+        return seats.map((s) => {
+            const seatState = gameState?.seats[s.id];
+            const isReady = gameState?.state === "ready";
+            const isActiveTurn = gameState?.activeRound.turn === s.id;
+            const seatBorderColor = gameState?.seats[s.id].username
+                ? "solid"
+                : "";
+            const seatColor = gameState
+                ? isReady
+                    ? seatState.ready
+                        ? "blue"
+                        : "black"
+                    : isActiveTurn
+                      ? "green"
+                      : "black"
+                : "";
+            const seatName = gameState?.seats[s.id]?.username || null;
+            const avatarColor = s.id === seat;
+
+            return (
+                <Box
+                    key={s.id}
+                    sx={{
+                        position: "absolute",
+                        width: "150px",
+                        height: "150px",
+                        border: `5px ${seatBorderColor} ${seatColor}`,
+                        transform: "translate(-50%, -50%)",
+                        top: s.top,
+                        left: s.left,
+                    }}
+                >
+                    <PokerSeat
+                        gameState={gameState}
+                        color={avatarColor}
+                        name={seatName}
+                        seat={seat}
+                    />
+                </Box>
+            );
+        });
+    }
+
     const sendPost = () => {};
 
     const sendCheck = () => {};
@@ -208,49 +253,7 @@ function Room() {
 
     return (
         <div className="container">
-            {seats.map((s) => {
-                return (
-                    <Box
-                        key={s.id}
-                        sx={{
-                            position: "absolute",
-                            width: "150px",
-                            height: "150px",
-                            border: `5px ${
-                                gameState
-                                    ? gameState.seats[s.id].username
-                                        ? "solid"
-                                        : ""
-                                    : ""
-                            } ${
-                                gameState
-                                    ? gameState.state === "ready"
-                                        ? gameState.seats[s.id].ready
-                                            ? "blue"
-                                            : "black"
-                                        : gameState.activeRound.turn === s.id
-                                          ? "green"
-                                          : "black"
-                                    : ""
-                            }`,
-                            transform: "translate(-50%, -50%)",
-                            top: s.top,
-                            left: s.left,
-                        }}
-                    >
-                        <Avatar
-                            sx={{
-                                height: "100%",
-                                width: "100%",
-                                bgcolor: `${s.id === seat ? "#0277bd" : ""}`,
-                                color: "white",
-                            }}
-                        >
-                            {gameState ? gameState.seats[s.id].username : null}
-                        </Avatar>
-                    </Box>
-                );
-            })}
+            {renderSeats()}
             <Grid
                 container
                 direction="column"

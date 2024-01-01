@@ -61,36 +61,42 @@ class GameState {
                 username: null,
                 balance: 0,
                 ready: false,
+                holeCards: [],
             },
             {
                 id: 1,
                 username: null,
                 balance: 0,
                 ready: false,
+                holeCards: [],
             },
             {
                 id: 2,
                 username: null,
                 balance: 0,
                 ready: false,
+                holeCards: [],
             },
             {
                 id: 3,
                 username: null,
                 balance: 0,
                 ready: false,
+                holeCards: [],
             },
             {
                 id: 4,
                 username: null,
                 balance: 0,
                 ready: false,
+                holeCards: [],
             },
             {
                 id: 5,
                 username: null,
                 balance: 0,
                 ready: false,
+                holeCards: [],
             },
         ];
         this.button = 0;

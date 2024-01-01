@@ -110,7 +110,22 @@ class TexasHoldemUtils {
         emitTimer,
     ) {
         if (global.timers[entryCode]) delete global.timers[entryCode];
-        console.log(gameState.deck.pop());
+
+        gameState.deck.shuffle();
+        for (let round = 0; round < 2; round++) {
+            for (let i = 0; i < gameState.seats.length; i++) {
+                if (gameState.seats[i].username) {
+                    const cardToDeal = gameState.deck.pop();
+                    console.log(
+                        `Dealt Card to ${gameState.seats[i].username}`,
+                        cardToDeal,
+                    );
+                    gameState.seats[i].holeCards.push(cardToDeal);
+                }
+            }
+        }
+        console.log("Finished Dealing", gameState);
+
         global.timers[entryCode] = new Timer(
             entryCode,
             2,
