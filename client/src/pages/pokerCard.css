@@ -1,0 +1,18 @@
+@keyframes dealAnimation {
+    0% {
+        transform: translateY(0) translateX(-50%);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(80vh) translateX(-50%);
+        opacity: 0;
+    }
+}
+
+.deal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: dealAnimation 3s ease-in-out;
+}

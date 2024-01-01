@@ -2,16 +2,18 @@ class Timer {
     constructor(entryCode, initialTime, callback) {
         this.entryCode = entryCode;
         this.time = initialTime;
+        this.resetTime = initialTime;
         this.interval = null;
         this.callback = callback;
     }
 
     start() {
-        this.time = 14;
-        this.interval = setInterval(async () => {
+        this.callback(false, this.resetTime);
+        this.time = this.resetTime - 1;
+        this.interval = setInterval(() => {
             const startTime = new Date();
             if (this.time < 1) {
-                this.time = 15;
+                clearInterval(this.interval);
                 this.callback(true, this.time--);
             } else this.callback(false, this.time--);
             const endTime = new Date();

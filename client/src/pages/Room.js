@@ -23,6 +23,7 @@ const actionInMemory = [
     { id: 3, type: "call" },
     { id: 4, type: "fold" },
     { id: 5, type: "show" },
+    { id: 6, type: "ready" },
 ];
 
 function Room() {
@@ -31,7 +32,7 @@ function Room() {
     const [user, setUser] = useState(null);
     const { roomCode } = useParams();
     const [userJoined, setUserJoined] = useState(false);
-    const [timer, setTimer] = useState(60);
+    const [timer, setTimer] = useState(15);
     const [gameState, setGameState] = useState(null);
     const [seat, setSeat] = useState(-1);
 
@@ -97,12 +98,12 @@ function Room() {
 
     useEffect(() => {
         if (gameState) {
-            console.log("Logging Game State: ", gameState);
+            //console.log("Logging Game State: ", gameState);
 
             if (gameState.activeRound.turn === seat) {
-                console.log("IT IS YOUR TURN!!");
+                //console.log("IT IS YOUR TURN!!");
             } else {
-                console.log("Please wait for your turn");
+                // console.log("Please wait for your turn");
             }
         }
     }, [gameState]);
@@ -125,6 +126,7 @@ function Room() {
     };
 
     const handleTimerUpdate = (data) => {
+        console.count();
         setTimer(data);
     };
 
@@ -145,9 +147,52 @@ function Room() {
     const sendAction = (actionType) => {
         const action = {
             type: actionType,
+            seatId: seat,
         };
         socket.emit("action", action, roomCode);
     };
+
+    const renderContent = () => {
+        if (gameState) {
+            if (gameState.state === "ready") {
+                return (
+                    <Button
+                        sx={{ m: 0.5 }}
+                        color="customDarkGrey"
+                        variant="contained"
+                        onClick={() => sendAction("ready")}
+                    >
+                        Ready!
+                    </Button>
+                );
+            } else if (gameState.state === "dealing") {
+                return <></>;
+            } else {
+                return actionInMemory.map((b) => (
+                    <Button
+                        key={b.id}
+                        sx={{ m: 0.5 }}
+                        color="customDarkGrey"
+                        variant="contained"
+                        onClick={() => sendAction(b.type)}
+                        disabled={
+                            gameState.activeRound.turn === seat ? false : true
+                        }
+                    >
+                        {b.type}
+                    </Button>
+                ));
+            }
+        } else {
+            return <p>loading...</p>;
+        }
+    };
+
+    function renderStateName() {
+        if (gameState) {
+            return <h1>{gameState.state}</h1>;
+        } else return;
+    }
 
     const sendPost = () => {};
 
@@ -171,12 +216,22 @@ function Room() {
                             position: "absolute",
                             width: "150px",
                             height: "150px",
-                            border: `5px solid ${
+                            border: `5px ${
                                 gameState
-                                    ? gameState.activeRound.turn === s.id
-                                        ? "green"
-                                        : "black"
-                                    : "black"
+                                    ? gameState.seats[s.id].username
+                                        ? "solid"
+                                        : ""
+                                    : ""
+                            } ${
+                                gameState
+                                    ? gameState.state === "ready"
+                                        ? gameState.seats[s.id].ready
+                                            ? "blue"
+                                            : "black"
+                                        : gameState.activeRound.turn === s.id
+                                          ? "green"
+                                          : "black"
+                                    : ""
                             }`,
                             transform: "translate(-50%, -50%)",
                             top: s.top,
@@ -220,7 +275,9 @@ function Room() {
                         border: 1,
                         borderColor: "green",
                     }}
-                ></Grid>
+                >
+                    {renderStateName()}
+                </Grid>
                 <Grid
                     container
                     direction="row"
@@ -261,27 +318,7 @@ function Room() {
                             alignItems="center"
                             justifyContent="center"
                         >
-                            {actionInMemory.map((b) => {
-                                return (
-                                    <Button
-                                        key={b.id}
-                                        sx={{ m: 0.5 }}
-                                        color="customDarkGrey"
-                                        variant="contained"
-                                        onClick={() => sendAction(b.type)}
-                                        disabled={
-                                            gameState
-                                                ? gameState.activeRound.turn ===
-                                                  seat
-                                                    ? false
-                                                    : true
-                                                : true
-                                        }
-                                    >
-                                        {b.type}
-                                    </Button>
-                                );
-                            })}
+                            {renderContent()}
                         </Grid>
                     </Grid>
                 </Grid>

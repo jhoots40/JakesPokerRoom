@@ -1,10 +1,8 @@
 const Room = require("./../models/room");
-const User = require("./../models/user");
-const redisClient = require("./../config/redis");
 const pokerLogic = require("./pokerLogic");
 const Timer = require("./Timer");
 
-const timers = {}; // Keep track of timers for each room
+global.timers = {}; // Keep track of timers for each room
 
 module.exports = (io) => {
     io.on("connection", (socket) => {
@@ -32,8 +30,8 @@ module.exports = (io) => {
                 socket.entryCode = entryCode;
 
                 // Initialize the timer for the room if not exists
-                if (!timers[entryCode]) {
-                    timers[entryCode] = new Timer(
+                if (!global.timers[entryCode]) {
+                    global.timers[entryCode] = new Timer(
                         entryCode,
                         15,
                         async (finished, currentTime) => {
@@ -43,28 +41,32 @@ module.exports = (io) => {
                                     {
                                         type: "fold",
                                     },
-                                    (updatedState) => {
-                                        io.to(entryCode).emit(
-                                            "gameUpdate",
-                                            updatedState,
-                                        );
+                                    async (updatedState) => {
+                                        await io
+                                            .to(entryCode)
+                                            .emit("gameUpdate", updatedState);
+                                    },
+                                    async (time) => {
+                                        await io
+                                            .to(entryCode)
+                                            .emit("timerUpdate", time);
                                     },
                                 );
                             }
                             io.to(entryCode).emit("timerUpdate", currentTime);
                         },
                     );
-                    timers[entryCode].start();
+                    //timers[entryCode].start();
                 }
 
                 // update game state with new player
-                pokerLogic.addPlayer(
+                await pokerLogic.addPlayer(
                     entryCode,
                     username,
-                    (updatedState, seat) => {
+                    async (updatedState, seat) => {
                         // let other users know that new user has joined
                         callback({ success: true, seat: seat });
-                        io.to(entryCode).emit("userJoined", {
+                        await io.to(entryCode).emit("userJoined", {
                             message: `${username} joined room ${entryCode}`,
                             gameObject: updatedState,
                         });
@@ -90,28 +92,19 @@ module.exports = (io) => {
             });
         });
 
-        socket.on("action", async (action, entryCode) => {
-            //call game logic function to handle action
-            //users might be able to send multiple actions to the server before I emit the new game update,
-            //i belive this should be solved with race condition
-            //I think the way I solve this is whatever action gets received first is the one that is handled,
-            //if any action reaches the lock and it is not avvailable, that action is lost
-
-            //we need a seperate logic, for the case where a user tries to join the room and we recieve an action update at the
-            //same time
-            await pokerLogic.processAction(
+        socket.on("action", (action, entryCode) => {
+            pokerLogic.processAction(
                 entryCode,
                 action,
                 (updatedState) => {
                     //emit updated game object to the frontend
                     io.to(entryCode).emit("gameUpdate", updatedState);
                 },
+                (time) => {
+                    //emits the time to the frontend
+                    io.to(entryCode).emit("timerUpdate", time);
+                },
             );
-
-            //restart the interval
-            timers[entryCode].stop();
-            io.to(entryCode).emit("timerUpdate", 15);
-            timers[entryCode].start();
         });
 
         socket.on("leaveRoom", async (entryCode) => {
@@ -148,9 +141,9 @@ module.exports = (io) => {
                 await pokerLogic.delPlayer(
                     entryCode,
                     username,
-                    (updatedState) => {
+                    async (updatedState) => {
                         //log to backend and frontend
-                        io.to(entryCode).emit("userLeft", {
+                        await io.to(entryCode).emit("userLeft", {
                             message: `${username} left room ${entryCode}`,
                             gameObject: updatedState,
                         });
@@ -166,8 +159,8 @@ module.exports = (io) => {
                 //if room is empty delete room
                 if (!updatedRoom) {
                     pokerLogic.deleteGameState(entryCode);
-                    timers[entryCode].stop();
-                    delete timers[entryCode];
+                    global.timers[entryCode].stop();
+                    delete global.timers[entryCode];
                 }
 
                 console.log(`${username} left room ${entryCode}`);
